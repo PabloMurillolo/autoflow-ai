@@ -12,7 +12,13 @@ A bilingual front desk for the businesses that keep Miami moving.
 
 </div>
 
-## New in v0.2
+## New in v0.3
+
+The private workspace now includes an **OpenAI Responses API receptionist**: English/Spanish conversation, strict structured extraction, customer-reviewed draft fields, owner-approved shop facts, and explicit handoff. Owners manage public shop information and AI activation. Persistent daily call caps, input limits, timeouts, and safe provider-failure handling bound usage. **56 automated tests** pass.
+
+**Live AI is not connected or evaluated yet.** No API key is configured. The implementation is tested with mocked provider responses; a separate 16-case bilingual live evaluation requires explicit opt-in. [Connect and evaluate the AI receptionist](docs/AI.md). The static GitHub Pages demo stays key-free and rule-based.
+
+## Included from v0.2
 
 The next roadmap milestone is implemented: an optional **private server workspace** with owner sign-in, SQLite-backed leads, shop-level access controls, server validation, idempotent intake, status updates, export, deletion, and configurable retention. **37 automated tests** cover the demo and server.
 
@@ -36,9 +42,9 @@ Built by **Pablo Murillo** as a portfolio project and a foundation for a future 
 
 ### Honest demo boundaries
 
-**The receptionist remains a deterministic, rule-based prototype, not a connected LLM or voice agent.** It runs without API keys, a backend, or paid services. Nothing is sent to a real shop. An appointment request is **not** a confirmed booking. Changing a lead to “Scheduled” changes only the local demo status.
+**The public GitHub Pages receptionist is a deterministic, rule-based prototype, not a connected LLM or voice agent.** It runs without API keys, a backend, or paid services. Nothing is sent to a real shop. An appointment request is **not** a confirmed booking. Changing a lead to “Scheduled” changes only the local demo status.
 
-In the **public portfolio demo**, use **fictional contact information only**. Its owner dashboard has no authentication, and browser storage is neither a shared database nor suitable for real customer data. Each browser has its own workspace; clearing browser data deletes its records. External integrations below are contracts and documentation, not live features.
+In the **public portfolio demo**, use **fictional contact information only**. Its owner dashboard has no authentication, and browser storage is neither a shared database nor suitable for real customer data. Each browser has its own workspace; clearing browser data deletes its records. The private server has an optional LLM integration; calendar, SMS, CRM, and media generation remain planned.
 
 ## Run locally
 
@@ -104,7 +110,7 @@ For GitHub Pages, see [deployment instructions](docs/DEPLOYMENT.md). For Vercel/
 
 ## Environment and secrets
 
-`.env.example` documents private-server settings and placeholders for future **server-only** integrations. Real `.env` files are ignored. Never put keys into source code, a public repository, local storage, or variables prefixed with `VITE_` (which are exposed in the browser bundle). Adding a provider key does **not** enable a future integration.
+`.env.example` documents private-server settings and placeholders for future **server-only** integrations. Real `.env` files are ignored. Never put keys into source code, a public repository, local storage, or variables prefixed with `VITE_` (which are exposed in the browser bundle). For AI, both a server key and owner-approved activation are required. Adding keys for other providers does not enable their future integrations.
 
 The v0.2 server implements owner sessions, shop isolation, validation, intake acknowledgment, and basic rate limits. A production deployment still needs durable encrypted storage, HTTPS, monitored backups, appropriate privacy handling, and stronger edge abuse controls. See [operational limits](docs/SERVER.md#operational-limits).
 
@@ -112,7 +118,8 @@ The v0.2 server implements owner sessions, shop isolation, validation, intake ac
 
 - [x] v0.1: polished local demo, bilingual intake, appointment requests, lead dashboard, tests, integration contracts.
 - [x] v0.2: authenticated owner dashboard, server API, SQLite, tenant isolation, data retention and deletion controls. Server-host deployment is separate from the public demo.
-- [ ] v0.3: server-side LLM receptionist with structured outputs, bilingual evaluations, safe handoff, and rate limits.
+- [x] v0.3 implementation: server-side LLM adapter, structured outputs, bilingual chat, approved shop facts, explicit handoff, and persistent call limits.
+- [ ] v0.3 activation gate: configure a private API key, pass live bilingual evaluations, and review real pilot conversations before customer launch.
 - [ ] v0.4: calendar availability/confirmation, consent-based SMS, and idempotent CRM synchronization.
 - [ ] v0.5: manager orchestration and Higgsfield-powered marketing drafts with human approval.
 - [ ] Later: opt-in voice receptionist and campaign attribution analytics.
