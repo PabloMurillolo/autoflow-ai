@@ -85,3 +85,9 @@ Login is limited per socket IP and shop/email (10 attempts / 15 minutes); intake
 A shop can hold up to 10,000 active leads. Search is paginated; exports are bounded by that limit. Status updates use last-write-wins. Full audit history, optimistic concurrency, fine-grained owner roles, self-service identity, MFA, and operational alerting remain follow-up hardening work. The live LLM, calendar, SMS, CRM, and Higgsfield adapters are not connected.
 
 Security references: [Node SQLite](https://nodejs.org/api/sqlite.html), [OWASP session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html), [OWASP CSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html).
+
+## v0.3 upgrade
+
+Back up the database, rebuild with `npm run build:server`, and restart. Migration 2 adds approved shop information and persistent AI usage counters without altering lead records. No AI calls are enabled until a server key exists and an authenticated owner approves/enables the shop's information. The original guided form remains available without AI. See [AI setup and evaluation](AI.md).
+
+New routes: owner-only `GET /api/knowledge`, CSRF-protected `PATCH /api/knowledge`, public `GET /api/shops/:slug/receptionist` availability/contact, and origin-checked `POST /api/shops/:slug/receptionist` with `{messages: string[], language: "en" | "es", consent: true}`. Public callers cannot modify shop knowledge. The AI route never creates leads.
