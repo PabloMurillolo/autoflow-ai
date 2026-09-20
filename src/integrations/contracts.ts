@@ -25,9 +25,7 @@ export interface HiggsfieldAdapter {
     prompt: string,
     approvedAssetUrls: string[],
   ): Promise<{ jobId: string }>;
-  status(
-    jobId: string,
-  ): Promise<{
+  status(jobId: string): Promise<{
     state: "queued" | "processing" | "completed" | "failed";
     assetUrl?: string;
   }>;
