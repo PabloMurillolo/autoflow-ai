@@ -1933,3 +1933,201 @@ td small {
     scroll-behavior: auto !important;
   }
 }
+
+/* Server workspace: same brand, private data and account controls. */
+.server-header {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 22px 5%;
+  border-bottom: 1px solid #e1e6d9;
+  background: white;
+  flex-wrap: wrap;
+}
+.server-brand {
+  font-family: Manrope, sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -1px;
+}
+.server-brand span {
+  font-size: 11px;
+  color: #7a8a6c;
+  margin-left: 5px;
+}
+.server-header > div {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-left: auto;
+}
+.server-main {
+  max-width: 1300px;
+  padding: 40px 5%;
+  margin: auto;
+}
+.login-card {
+  max-width: 480px;
+  margin: 30px auto;
+  padding: 35px;
+}
+.login-card > .agent-icon {
+  margin-bottom: 24px;
+}
+.login-card h1 {
+  font-size: 29px;
+}
+.login-card > p {
+  color: #6b7b5f;
+  line-height: 1.8;
+  font-size: 13px;
+  margin: 16px 0 22px;
+}
+.login-card input {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d5dec9;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.login-card .field {
+  font-size: 12px;
+  color: #526944;
+}
+.server-notice {
+  padding: 14px 18px;
+  border-radius: 8px;
+  border: 1px solid #d8e7c7;
+  background: #f0f7e7;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.server-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px;
+  flex-wrap: wrap;
+}
+.server-pagination span {
+  margin-right: auto;
+  font-size: 11px;
+  color: #627552;
+}
+.owner-dialog {
+  width: min(500px, 90vw);
+  max-height: 85vh;
+  overflow: auto;
+  padding: 30px;
+  border: 1px solid #dfe6d5;
+  border-radius: 15px;
+  color: #26382f;
+}
+.owner-dialog::backdrop {
+  background: #14221c88;
+  backdrop-filter: blur(3px);
+}
+.owner-dialog h2 {
+  font-size: 26px;
+  margin: 10px 0;
+}
+.owner-dialog > p {
+  font-size: 13px;
+  color: #6c7c60;
+}
+.owner-dialog dl {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 12px;
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 24px 0;
+}
+.owner-dialog dt {
+  color: #738267;
+}
+.owner-dialog dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.owner-dialog .full {
+  margin-top: 24px;
+}
+.delete-confirm {
+  padding: 15px;
+  border: 1px solid #ead4c9;
+  border-radius: 7px;
+  margin-top: 20px;
+  background: #fff9f6;
+}
+.delete-confirm p {
+  font-size: 12px;
+  line-height: 1.7;
+  margin-top: 8px;
+  color: #845947;
+}
+.danger {
+  background: #9c3d2d;
+  color: white;
+  border: 0;
+  border-radius: 7px;
+  padding: 11px 14px;
+  font-size: 12px;
+}
+.server-app .fine-print {
+  color: #647659 !important;
+}
+.server-app .field {
+  color: #536c41;
+}
+.server-app .form-intro {
+  color: #627653;
+}
+.server-app .receptionist-intro > p {
+  color: #687b57;
+}
+.server-app .consent {
+  color: #627653;
+}
+.server-app .metric > small {
+  color: #718561;
+}
+@media (max-width: 600px) {
+  .server-header {
+    padding: 18px;
+    gap: 14px;
+  }
+  .server-header > .demo-pill {
+    font-size: 9px;
+  }
+  .server-header > div {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .server-main {
+    padding: 28px 18px;
+  }
+  .login-card {
+    padding: 25px;
+    margin: 10px 0;
+  }
+  .login-card input {
+    font-size: 16px;
+  }
+  .server-header .primary,
+  .server-header .secondary {
+    padding: 9px 12px;
+    font-size: 10px;
+  }
+  .server-app .metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+  .server-pagination {
+    font-size: 10px;
+  }
+  .owner-dialog {
+    padding: 24px;
+  }
+}
