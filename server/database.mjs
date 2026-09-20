@@ -29,7 +29,10 @@ export function openDatabase(filename = "./data/autoflow.sqlite") {
  CREATE TABLE IF NOT EXISTS leads(id TEXT PRIMARY KEY, shop_id TEXT NOT NULL REFERENCES shops(id), payload TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('New','Contacted','Scheduled')), created_at TEXT NOT NULL, consent_at TEXT NOT NULL);
  CREATE INDEX IF NOT EXISTS leads_shop_date ON leads(shop_id,created_at DESC,id DESC);
  CREATE TABLE IF NOT EXISTS requests(shop_id TEXT NOT NULL REFERENCES shops(id), request_key TEXT NOT NULL, payload_hash TEXT NOT NULL, lead_id TEXT NOT NULL REFERENCES leads(id) ON DELETE CASCADE, PRIMARY KEY(shop_id,request_key));
- INSERT OR IGNORE INTO migrations VALUES(1);`);
+ INSERT OR IGNORE INTO migrations VALUES(1);
+ CREATE TABLE IF NOT EXISTS shop_knowledge(shop_id TEXT PRIMARY KEY REFERENCES shops(id), payload TEXT NOT NULL, updated_at TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS ai_usage(scope TEXT NOT NULL, day TEXT NOT NULL, calls INTEGER NOT NULL, PRIMARY KEY(scope,day));
+ INSERT OR IGNORE INTO migrations VALUES(2);`);
   return db;
 }
 export async function provisionOwner(db, { slug, name, email, password }) {
@@ -83,6 +86,9 @@ export async function provisionOwner(db, { slug, name, email, password }) {
 export function prune(db, retentionDays, now = Date.now()) {
   const cutoff = new Date(now - retentionDays * 86400000).toISOString();
   db.prepare("DELETE FROM sessions WHERE expires<=?").run(now);
+  db.prepare("DELETE FROM ai_usage WHERE day<?").run(
+    new Date(now - 31 * 86400000).toISOString().slice(0, 10),
+  );
   return db.prepare("DELETE FROM leads WHERE created_at<?").run(cutoff).changes;
 }
 export async function backupDatabase(db, destination) {
