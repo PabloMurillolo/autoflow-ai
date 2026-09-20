@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -928,12 +928,18 @@ function App() {
     </div>
   );
 }
-function Receptionist({
+export function Receptionist({
   onSaved,
   onDashboard,
+  backend,
 }: {
   onSaved: () => void;
   onDashboard: () => void;
+  backend?: {
+    shopName: string;
+    retentionDays: number;
+    submit: (data: Intake) => Promise<Lead>;
+  };
 }) {
   const [lang, setLang] = useState<Language>("en");
   const [manualLang, setManualLang] = useState(false);
@@ -952,7 +958,33 @@ function Receptionist({
     date: nextDay(),
     time: "Morning",
   });
-  const t = copy[lang];
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const t = { ...copy[lang] };
+  if (backend) {
+    t.intro = t.intro.replace("Miami Auto Care", backend.shopName);
+    t.greet =
+      lang === "en"
+        ? "Hi! I’m the AutoFlow guided assistant. What can we help you with today?"
+        : "¡Hola! Soy el asistente guiado de AutoFlow. ¿En qué podemos ayudarte?";
+    t.consent =
+      lang === "en"
+        ? `I agree to send these details to ${backend.shopName} for this service request. Stored for up to ${backend.retentionDays} days; no SMS consent is implied.`
+        : `Acepto enviar estos datos a ${backend.shopName} para esta solicitud. Se guardan hasta ${backend.retentionDays} días; esto no autoriza SMS.`;
+    t.successDesc =
+      lang === "en"
+        ? "Your request is saved for the shop owner to review. No appointment is confirmed and no SMS was sent."
+        : "Tu solicitud está guardada para que el taller la revise. No se ha confirmado ninguna cita ni enviado SMS.";
+    t.saveError =
+      lang === "en"
+        ? "We couldn’t save your request. Check your connection and details, then try again. Your details are still here."
+        : "No pudimos guardar la solicitud. Revisa tu conexión y los datos e inténtalo de nuevo. Tus datos siguen aquí.";
+    t.view = lang === "en" ? "Owner sign-in" : "Acceso del taller";
+    t.demo =
+      lang === "en"
+        ? "Guided assistant · No live AI or phone calls"
+        : "Asistente guiado · Sin IA en vivo ni llamadas";
+  }
   function begin(text: string) {
     const parsed = understandRequest(text);
     const language = manualLang ? lang : parsed.language;
@@ -963,6 +995,7 @@ function Receptionist({
     setStep(1);
   }
   function startOver() {
+    if (savingRef.current) return;
     setStep(0);
     setMessage("");
     setSaved(null);
@@ -986,7 +1019,9 @@ function Receptionist({
   return (
     <div className="receptionist-page" lang={lang}>
       <div className="receptionist-top">
-        <span className="eyebrow">MIAMI AUTO CARE · DEMO</span>
+        <span className="eyebrow">
+          {backend ? backend.shopName : "MIAMI AUTO CARE · DEMO"}
+        </span>
         <div className="language-switch" aria-label="Assistant language">
           <button
             aria-pressed={lang === "en"}
@@ -1025,11 +1060,15 @@ function Receptionist({
           <div className="shop-detail">
             <CarFront size={19} />
             <div>
-              <strong>Miami Auto Care</strong>
+              <strong>{backend?.shopName || "Miami Auto Care"}</strong>
               <span>
-                {lang === "en"
-                  ? "Fictional neighborhood auto shop"
-                  : "Taller de demostración ficticio"}
+                {backend
+                  ? lang === "en"
+                    ? "Service requests for your local shop"
+                    : "Solicitudes para tu taller local"
+                  : lang === "en"
+                    ? "Fictional neighborhood auto shop"
+                    : "Taller de demostración ficticio"}
               </span>
             </div>
           </div>
@@ -1153,9 +1192,13 @@ function Receptionist({
                   ))}
                 </div>
                 <p className="fine-print">
-                  {lang === "en"
-                    ? "Portfolio demo. Use fictional details only. Nothing is sent to a real shop."
-                    : "Demo de portafolio. Usa solo datos ficticios. No se envía nada a un taller real."}
+                  {backend
+                    ? lang === "en"
+                      ? `Your details go to ${backend.shopName} and are kept for up to ${backend.retentionDays} days. Contact the shop to request deletion. No marketing or SMS opt-in.`
+                      : `Tus datos se envían a ${backend.shopName} y se guardan hasta ${backend.retentionDays} días. Contacta al taller para eliminarlos. No autoriza marketing ni SMS.`
+                    : lang === "en"
+                      ? "Portfolio demo. Use fictional details only. Nothing is sent to a real shop."
+                      : "Demo de portafolio. Usa solo datos ficticios. No se envía nada a un taller real."}
                 </p>
               </>
             )}
@@ -1297,12 +1340,17 @@ function Receptionist({
                 )}
                 <button
                   className="primary full"
-                  onClick={() => {
+                  disabled={saving}
+                  onClick={async () => {
+                    if (savingRef.current) return;
+                    savingRef.current = true;
+                    setSaving(true);
+                    setError("");
                     try {
-                      const lead = captureRequest(
-                        { ...data, language: lang },
-                        repository,
-                      );
+                      const input = { ...data, language: lang };
+                      const lead = backend
+                        ? await backend.submit(input)
+                        : captureRequest(input, repository);
                       setSaved(lead);
                       onSaved();
                       setStep(3);
@@ -1322,14 +1370,22 @@ function Receptionist({
                           ? `${lang === "en" ? "Please check" : "Revisa"}: ${labels[key]}. ${key === "date" ? (lang === "en" ? "Choose a future date." : "Elige una fecha futura.") : ""}`
                           : t.saveError,
                       );
+                    } finally {
+                      savingRef.current = false;
+                      setSaving(false);
                     }
                   }}
                 >
-                  {t.submit}
+                  {saving
+                    ? lang === "en"
+                      ? "Saving request…"
+                      : "Guardando solicitud…"
+                    : t.submit}
                   <ArrowRight size={16} />
                 </button>
                 <button
                   className="text-button back-button"
+                  disabled={saving}
                   onClick={() => {
                     setError("");
                     setStep(1);

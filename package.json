@@ -1,16 +1,21 @@
 {
   "name": "autoflow-ai",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "vitest run",
-    "check": "npm test && npm run build",
+    "test": "vitest run src && node --test server/*.test.mjs",
+    "check": "npm test && npm run build && npm run build:server",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build:server": "tsc -b && vite build --mode server",
+    "start": "node --env-file-if-exists=.env server/index.mjs",
+    "owner:setup": "node --env-file=.env server/manage.mjs owner",
+    "data:prune": "node --env-file=.env server/manage.mjs prune",
+    "data:backup": "node --env-file=.env server/manage.mjs backup"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
@@ -27,6 +32,6 @@
     "vitest": "^3.2.0"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=24.0.0"
   }
 }
