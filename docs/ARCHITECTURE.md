@@ -1,6 +1,12 @@
 # Architecture and tradeoffs
 
-## Scope
+## v0.2 server milestone
+
+The private workspace adds `src/BackendApp.tsx`, the asynchronous `src/integrations/api.ts` client, and a `server/` boundary. `server/app.mjs` validates and authorizes requests; `server/database.mjs` owns the SQLite schema, password hashing, provisioning, retention, and backup operations. `server/index.mjs` serves the built UI and API from one origin. The static demo remains a separate build with no backend dependency. See [server setup and security design](SERVER.md).
+
+The receptionist now accepts an asynchronous submission adapter. Its submit button is disabled while saving, it preserves data on failure, and the API adapter retries with a stable request key. No authenticated records are stored in browser storage. The owner dashboard loads paginated records, handles expired sessions, and uses an accessible native dialog for status/deletion actions.
+
+## Public demo scope
 
 React + TypeScript and Vite produce a small static app that is easy to inspect, run, and host. No paid account is needed. The v0.1 priority is a reliable, explainable demo of the customer-to-owner workflow; natural-language sophistication and shared production storage come later.
 
@@ -16,7 +22,7 @@ Status lifecycle: New → Contacted → Scheduled. The demo permits changing sta
 
 Storage key: `autoflow.leads.v1`. Browser storage is synchronous and local to an origin. Changes in another tab refresh this tab via the storage event. Concurrent edits are last-writer-wins, and the demo makes no transactional guarantees. No messages, credentials, or real customer information should be stored here.
 
-## Moving to production
+## Next production steps (v0.2 foundation now implemented)
 
 1. Add a server API and database with owner authentication, per-shop authorization, migrations, backups, and data lifecycle controls. Replace the local adapter with an asynchronous API repository and update manager/UI loading states.
 2. Move validation to the server as the authority. Add request size limits, abuse controls, logging without contact details, and idempotency tokens for retries. Define clear consent and privacy handling before collecting real details.

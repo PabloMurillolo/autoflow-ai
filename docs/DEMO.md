@@ -24,3 +24,7 @@ Suggested narration: “I built AutoFlow AI to explore how bilingual service int
 - Why browser persistence is convenient for a portfolio but unsuitable for customer operations.
 - How provider contracts let calendar, SMS, CRM, and Higgsfield evolve independently.
 - How failed writes and corrupt saved data are handled without false success.
+
+## v0.2 private-workspace walkthrough
+
+Follow SERVER.md to provision your own local owner account. Start the Node server, submit a fictional Spanish request, then use Owner sign-in to open the private dashboard. Inspect the request, change its status, reload, and sign out. Explain that the database belongs to the server and survives browser clearing; only authenticated owners can list it. Provision a second shop to demonstrate isolation. The public GitHub Pages link intentionally continues to show the safe local demo.

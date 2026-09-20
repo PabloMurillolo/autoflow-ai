@@ -1,8 +1,12 @@
 # Deployment
 
+## Two deployment modes
+
+The public demo is live at [AutoFlow AI](https://pablomurillolo.github.io/autoflow-ai/). GitHub Actions validates both builds and deploys only the static demo from `dist/` on pushes to main. The private workspace requires a Node 24+ host and a persistent volume; follow [server deployment](SERVER.md#deployment). It is not deployed to GitHub Pages.
+
 ## Static hosts
 
-Use Node 22.12+ and `npm ci && npm run build`. Publish only `dist/`. Do not publish source environment files. Vite's `base: './'` keeps assets relative, including under `/autoflow-ai/`. No backend or secrets are needed.
+Use Node 24+ and `npm ci && npm run build`. Publish only `dist/`. Do not publish source environment files. Vite's `base: './'` keeps assets relative, including under `/autoflow-ai/`. No backend or secrets are needed.
 
 ## GitHub Pages
 
@@ -23,4 +27,4 @@ References: [Vite static deployment](https://vite.dev/guide/static-deploy), [Git
 - Open the app in a second browser: its records should be independent.
 - Test narrow screens and keyboard navigation.
 
-Production customer use requires a backend and authenticated owner access; static hosting alone does not add either.
+The optional v0.2 server adds authenticated owner access and database storage; static hosting alone does not run it.
