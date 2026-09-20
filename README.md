@@ -8,9 +8,15 @@ A bilingual front desk for the businesses that keep Miami moving.
 
 **React · TypeScript · Vite · English + Español**
 
-[Explore the code](src) · [Architecture](docs/ARCHITECTURE.md) · [Demo walkthrough](docs/DEMO.md) · [Integration roadmap](docs/INTEGRATIONS.md)
+[Live portfolio demo](https://pablomurillolo.github.io/autoflow-ai/) · [Private workspace setup](docs/SERVER.md) · [Explore the code](src) · [Architecture](docs/ARCHITECTURE.md) · [Demo walkthrough](docs/DEMO.md) · [Integration roadmap](docs/INTEGRATIONS.md)
 
 </div>
+
+## New in v0.2
+
+The next roadmap milestone is implemented: an optional **private server workspace** with owner sign-in, SQLite-backed leads, shop-level access controls, server validation, idempotent intake, status updates, export, deletion, and configurable retention. **37 automated tests** cover the demo and server.
+
+The public GitHub Pages demo continues to use browser-local fictional data. The private workspace must run on a Node server with persistent storage; it is not hosted by GitHub Pages. [Run the private workspace](docs/SERVER.md).
 
 ## Why AutoFlow?
 
@@ -30,13 +36,13 @@ Built by **Pablo Murillo** as a portfolio project and a foundation for a future 
 
 ### Honest demo boundaries
 
-**This version is a deterministic, rule-based AI receptionist prototype, not a connected LLM or voice agent.** It runs without API keys, a backend, or paid services. Nothing is sent to a real shop. An appointment request is **not** a confirmed booking. Changing a lead to “Scheduled” changes only the local demo status.
+**The receptionist remains a deterministic, rule-based prototype, not a connected LLM or voice agent.** It runs without API keys, a backend, or paid services. Nothing is sent to a real shop. An appointment request is **not** a confirmed booking. Changing a lead to “Scheduled” changes only the local demo status.
 
-Use **fictional contact information only**. The owner dashboard has no authentication, and browser storage is neither a shared database nor suitable for real customer data. Each browser has its own workspace; clearing browser data deletes its records. External integrations below are contracts and documentation, not live features.
+In the **public portfolio demo**, use **fictional contact information only**. Its owner dashboard has no authentication, and browser storage is neither a shared database nor suitable for real customer data. Each browser has its own workspace; clearing browser data deletes its records. External integrations below are contracts and documentation, not live features.
 
 ## Run locally
 
-Requirements: Node.js **22.12+**, npm, and a modern browser.
+Requirements: Node.js **24+**, npm, and a modern browser.
 
 ```sh
 git clone https://github.com/PabloMurillolo/autoflow-ai.git
@@ -45,7 +51,7 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite (usually `http://127.0.0.1:5173`). No environment file is required for v0.1. The interface uses Google Fonts with system font fallbacks.
+Open the local URL printed by Vite (usually `http://127.0.0.1:5173`). No environment file is required for the static demo. For the authenticated server, follow [private workspace setup](docs/SERVER.md). The interface uses Google Fonts with system font fallbacks.
 
 ```sh
 npm test          # domain, language, persistence, and failure-path tests
@@ -73,7 +79,7 @@ flowchart LR
     Marketing -. future .-> Higgsfield[Higgsfield media jobs]
 ```
 
-Solid arrows are implemented; dotted arrows are planned. These “agents” are modular responsibilities in a single application, not autonomous deployed services. See [architecture and production migration](docs/ARCHITECTURE.md).
+This diagram shows the browser-local demo. In v0.2 server mode, the customer intake calls a validated API and the authenticated owner dashboard reads shop-scoped SQLite records. See [server architecture](docs/SERVER.md). Solid arrows below are implemented in the demo; dotted arrows are planned. These “agents” are modular responsibilities in a single application, not autonomous deployed services. See [architecture and production migration](docs/ARCHITECTURE.md).
 
 ```text
 src/
@@ -92,20 +98,20 @@ src/
 
 ## Deploy
 
-This is a static application. Run `npm run build` and publish **`dist/`** to GitHub Pages, Vercel, Netlify, or any static host. The relative Vite base supports a repository path such as `/autoflow-ai/`. No server runtime or secret configuration is needed.
+For the public demo, run `npm run build` and publish **`dist/`** to GitHub Pages, Vercel, Netlify, or any static host. The relative Vite base supports a repository path such as `/autoflow-ai/`. No server runtime or secret configuration is needed.
 
 For GitHub Pages, see [deployment instructions](docs/DEPLOYMENT.md). For Vercel/Netlify, import this repository, choose Vite, use build command `npm run build`, and output directory `dist`. Pages are selected within the application, so no server rewrite is needed.
 
 ## Environment and secrets
 
-`.env.example` documents future **server-only** settings. Real `.env` files are ignored. Never put keys into source code, a public repository, local storage, or variables prefixed with `VITE_` (which are exposed in the browser bundle). Adding a key does **not** enable an integration in v0.1.
+`.env.example` documents private-server settings and placeholders for future **server-only** integrations. Real `.env` files are ignored. Never put keys into source code, a public repository, local storage, or variables prefixed with `VITE_` (which are exposed in the browser bundle). Adding a provider key does **not** enable a future integration.
 
-A production release needs authenticated server endpoints, access-controlled persistent storage, consent tracking, validation, rate limiting, and provider secret management before collecting actual customer details.
+The v0.2 server implements owner sessions, shop isolation, validation, intake acknowledgment, and basic rate limits. A production deployment still needs durable encrypted storage, HTTPS, monitored backups, appropriate privacy handling, and stronger edge abuse controls. See [operational limits](docs/SERVER.md#operational-limits).
 
 ## Roadmap
 
 - [x] v0.1: polished local demo, bilingual intake, appointment requests, lead dashboard, tests, integration contracts.
-- [ ] v0.2: authenticated owner dashboard, server API, database, tenant isolation, data retention and deletion controls.
+- [x] v0.2: authenticated owner dashboard, server API, SQLite, tenant isolation, data retention and deletion controls. Server-host deployment is separate from the public demo.
 - [ ] v0.3: server-side LLM receptionist with structured outputs, bilingual evaluations, safe handoff, and rate limits.
 - [ ] v0.4: calendar availability/confirmation, consent-based SMS, and idempotent CRM synchronization.
 - [ ] v0.5: manager orchestration and Higgsfield-powered marketing drafts with human approval.

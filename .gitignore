@@ -6,3 +6,11 @@ dist/
 *.local
 *.tsbuildinfo
 .DS_Store
+
+dist-server/
+data/
+backups/
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
