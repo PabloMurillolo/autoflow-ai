@@ -932,18 +932,20 @@ export function Receptionist({
   onSaved,
   onDashboard,
   backend,
+  initialDraft,
 }: {
   onSaved: () => void;
   onDashboard: () => void;
+  initialDraft?: Partial<Intake>;
   backend?: {
     shopName: string;
     retentionDays: number;
     submit: (data: Intake) => Promise<Lead>;
   };
 }) {
-  const [lang, setLang] = useState<Language>("en");
+  const [lang, setLang] = useState<Language>(initialDraft?.language || "en");
   const [manualLang, setManualLang] = useState(false);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialDraft ? 1 : 0);
   const [message, setMessage] = useState("");
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
@@ -957,6 +959,7 @@ export function Receptionist({
     language: "en",
     date: nextDay(),
     time: "Morning",
+    ...initialDraft,
   });
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
@@ -980,8 +983,11 @@ export function Receptionist({
         ? "We couldn’t save your request. Check your connection and details, then try again. Your details are still here."
         : "No pudimos guardar la solicitud. Revisa tu conexión y los datos e inténtalo de nuevo. Tus datos siguen aquí.";
     t.view = lang === "en" ? "Owner sign-in" : "Acceso del taller";
-    t.demo =
-      lang === "en"
+    t.demo = initialDraft
+      ? lang === "en"
+        ? "Review form · Check all suggested details"
+        : "Formulario de revisión · Comprueba los datos sugeridos"
+      : lang === "en"
         ? "Guided assistant · No live AI or phone calls"
         : "Asistente guiado · Sin IA en vivo ni llamadas";
   }

@@ -34,3 +34,7 @@ Storage key: `autoflow.leads.v1`. Browser storage is synchronous and local to an
 ## Accessibility and testing
 
 Semantic buttons, labels, native form controls, visible focus, language metadata on the receptionist, status announcements, and responsive layouts are included. The demo should be reviewed with a screen reader and real devices before production. The test suite covers parser behavior, invalid dates/contact details, persistence, corrupt data, failed writes, and status updates. Manual browser checks cover the complete English and Spanish journeys, search, filters, reload, and narrow viewports.
+
+## v0.3 AI boundary
+
+`server/receptionist.mjs` interprets untrusted customer messages with a strict Responses API schema and validates the result again locally. `src/AiReceptionist.tsx` supplies customer chat and authenticated shop-knowledge settings. Model output selects bounded server-owned answers and suggests editable intake fields; it cannot execute actions or query leads. `shop_knowledge` stores approved facts and `ai_usage` atomically reserves per-shop/global daily calls. See [AI setup, data flow, limits, and evaluation status](AI.md). Live model evaluation is still an activation gate.

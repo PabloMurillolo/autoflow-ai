@@ -3,6 +3,7 @@ import { readFile, stat } from "node:fs/promises";
 import { resolve, extname } from "node:path";
 import { openDatabase } from "./database.mjs";
 import { createApp } from "./app.mjs";
+import { createReceptionist } from "./receptionist.mjs";
 process.umask(0o077);
 const port = Number(process.env.PORT || 3000),
   host = process.env.HOST || "127.0.0.1";
@@ -17,6 +18,12 @@ const handle = await createApp({
   origin,
   defaultShop: process.env.DEFAULT_SHOP_SLUG || "miami-auto-care",
   retentionDays: Number(process.env.LEAD_RETENTION_DAYS || 90),
+  receptionist: createReceptionist({
+    apiKey: process.env.OPENAI_API_KEY,
+    model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+  }),
+  aiDailyLimit: Number(process.env.AI_DAILY_LIMIT || 100),
+  aiGlobalDailyLimit: Number(process.env.AI_GLOBAL_DAILY_LIMIT || 300),
 });
 const root = resolve("dist-server");
 const types = {

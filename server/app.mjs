@@ -1,6 +1,11 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { passwordHash, passwordMatches, prune } from "./database.mjs";
 import { validateIntake } from "../src/domain.ts";
+import {
+  emptyKnowledge,
+  validateKnowledge,
+  renderAnswer,
+} from "./receptionist.mjs";
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 const json = (body, status = 200, headers = {}) =>
   new Response(JSON.stringify(body), {
@@ -25,7 +30,51 @@ export async function createApp({
   now = () => Date.now(),
   loginLimit = 10,
   intakeLimit = 30,
+  receptionist = null,
+  aiDailyLimit = 100,
+  aiGlobalDailyLimit = 300,
+  aiIpLimit = 20,
 }) {
+  if (
+    ![aiDailyLimit, aiGlobalDailyLimit, aiIpLimit].every(
+      (n) => Number.isInteger(n) && n >= 1 && n <= 10000,
+    )
+  )
+    throw new Error("AI limits must be integers from 1 to 10000.");
+  let activeAi = 0;
+  function knowledge(shopId) {
+    const row = db
+      .prepare("SELECT payload FROM shop_knowledge WHERE shop_id=?")
+      .get(shopId);
+    return row ? JSON.parse(row.payload) : { ...emptyKnowledge };
+  }
+  function reserveAi(shopId) {
+    const day = new Date(now()).toISOString().slice(0, 10);
+    db.exec("BEGIN IMMEDIATE");
+    try {
+      for (const [scope, maximum] of [
+        ["global", aiGlobalDailyLimit],
+        ["shop:" + shopId, aiDailyLimit],
+      ]) {
+        const used =
+          db
+            .prepare("SELECT calls FROM ai_usage WHERE scope=? AND day=?")
+            .get(scope, day)?.calls || 0;
+        if (used >= maximum)
+          throw new HttpError(
+            429,
+            "AI daily limit reached. Use the request form or contact the shop.",
+          );
+        db.prepare(
+          "INSERT INTO ai_usage VALUES(?,?,1) ON CONFLICT(scope,day) DO UPDATE SET calls=calls+1",
+        ).run(scope, day);
+      }
+      db.exec("COMMIT");
+    } catch (e) {
+      db.exec("ROLLBACK");
+      throw e;
+    }
+  }
   const parsedOrigin = new URL(origin);
   if (
     parsedOrigin.origin !== origin ||
@@ -133,7 +182,7 @@ export async function createApp({
       if (method !== "GET" && req.headers.get("origin") !== origin)
         throw new HttpError(403, "Request origin is not allowed.");
       if (path === "/api/health" && method === "GET")
-        return json({ ok: true, version: "0.2.0" });
+        return json({ ok: true, version: "0.3.0" });
       if (path === "/api/config" && method === "GET") {
         const s = shop(url.searchParams.get("shop") || defaultShop);
         return json({ slug: s.slug, name: s.name, retentionDays });
@@ -208,6 +257,100 @@ export async function createApp({
         const s = ownerMutation(req);
         db.prepare("DELETE FROM sessions WHERE token_hash=?").run(s.token_hash);
         return json({ ok: true }, 200, { "Set-Cookie": cookie("", 0) });
+      }
+      if (path === "/api/knowledge" && method === "GET") {
+        const s = session(req);
+        const day = new Date(now()).toISOString().slice(0, 10);
+        return json({
+          knowledge: knowledge(s.shop_id),
+          providerConfigured: !!receptionist,
+          dailyLimit: aiDailyLimit,
+          usedToday:
+            db
+              .prepare("SELECT calls FROM ai_usage WHERE scope=? AND day=?")
+              .get("shop:" + s.shop_id, day)?.calls || 0,
+        });
+      }
+      if (path === "/api/knowledge" && method === "PATCH") {
+        const s = ownerMutation(req),
+          value = validateKnowledge(await body(req));
+        if (!value)
+          throw new HttpError(
+            400,
+            "Check shop information. Enabling AI requires a contact method and at least one service.",
+          );
+        db.prepare(
+          "INSERT INTO shop_knowledge VALUES(?,?,?) ON CONFLICT(shop_id) DO UPDATE SET payload=excluded.payload,updated_at=excluded.updated_at",
+        ).run(s.shop_id, JSON.stringify(value), new Date(now()).toISOString());
+        return json(value);
+      }
+      const aiRoute = path.match(/^\/api\/shops\/([a-z0-9-]+)\/receptionist$/);
+      if (aiRoute && method === "GET") {
+        const s = shop(aiRoute[1]),
+          k = knowledge(s.id);
+        return json({
+          available: !!receptionist && k.enabled,
+          contact: k.contact,
+        });
+      }
+      if (aiRoute && method === "POST") {
+        limit("ai-ip:" + ip, aiIpLimit, 3600000);
+        const s = shop(aiRoute[1]),
+          k = knowledge(s.id),
+          b = await body(req);
+        if (
+          b.consent !== true ||
+          !["en", "es"].includes(b.language) ||
+          !Array.isArray(b.messages) ||
+          b.messages.length < 1 ||
+          b.messages.length > 8 ||
+          !b.messages.every(
+            (m) =>
+              typeof m === "string" && m.trim().length > 0 && m.length <= 600,
+          )
+        )
+          throw new HttpError(
+            400,
+            "Use 1–8 short customer messages and acknowledge the AI data notice.",
+          );
+        if (!receptionist || !k.enabled)
+          throw new HttpError(
+            503,
+            "AI is not enabled. Use the request form or contact the shop.",
+          );
+        if (activeAi >= 2)
+          throw new HttpError(
+            429,
+            "The assistant is busy. Please try again shortly.",
+          );
+        const today = new Intl.DateTimeFormat("en-CA", {
+          timeZone: "America/New_York",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(new Date(now()));
+        reserveAi(s.id);
+        activeAi++;
+        try {
+          const result = await receptionist({
+            messages: b.messages.map((m) => m.trim()),
+            language: b.language,
+            today,
+          });
+          // Reload approval after the provider completes; a disabled shop takes effect immediately.
+          const current = knowledge(s.id);
+          if (!current.enabled)
+            throw new HttpError(
+              503,
+              "AI has been disabled. Please use the request form.",
+            );
+          return json(renderAnswer(result, current, b.language, today));
+        } catch (e) {
+          if (e instanceof HttpError) throw e;
+          return json(renderAnswer(null, knowledge(s.id), b.language, today));
+        } finally {
+          activeAi--;
+        }
       }
       const intake = path.match(/^\/api\/shops\/([a-z0-9-]+)\/requests$/);
       if (intake && method === "POST") {

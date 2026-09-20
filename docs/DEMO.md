@@ -28,3 +28,7 @@ Suggested narration: “I built AutoFlow AI to explore how bilingual service int
 ## v0.2 private-workspace walkthrough
 
 Follow SERVER.md to provision your own local owner account. Start the Node server, submit a fictional Spanish request, then use Owner sign-in to open the private dashboard. Inspect the request, change its status, reload, and sign out. Explain that the database belongs to the server and survives browser clearing; only authenticated owners can list it. Provision a second shop to demonstrate isolation. The public GitHub Pages link intentionally continues to show the safe local demo.
+
+## v0.3 private AI walkthrough
+
+Configure the private server and owner-approved facts using [AI setup](AI.md). Demonstrate the explicit AI data acknowledgment, then ask in English about hours and in Spanish about brake service for a Honda Accord. Use Review request to inspect/edit the suggested fields, add fictional contact details in the form, and submit a pending request. Ask for an exact price to show the direct-contact handoff. Do not imply that the handoff notifies staff or that a request books a slot. Without an API key, show the honest “AI not connected” state and the guided form. Complete the live evaluation gate before presenting the connection as verified.

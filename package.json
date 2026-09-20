@@ -1,6 +1,6 @@
 {
   "name": "autoflow-ai",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,7 +15,8 @@
     "start": "node --env-file-if-exists=.env server/index.mjs",
     "owner:setup": "node --env-file=.env server/manage.mjs owner",
     "data:prune": "node --env-file=.env server/manage.mjs prune",
-    "data:backup": "node --env-file=.env server/manage.mjs backup"
+    "data:backup": "node --env-file=.env server/manage.mjs backup",
+    "eval:ai": "node --env-file-if-exists=.env server/evaluate.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
