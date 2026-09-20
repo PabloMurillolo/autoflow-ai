@@ -13,6 +13,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Receptionist } from "./App";
+import { AiReceptionist, KnowledgeSettings } from "./AiReceptionist";
 import {
   backendApi,
   api,
@@ -26,9 +27,12 @@ export default function BackendApp() {
   const [shop, setShop] = useState<ShopConfig | null>(null),
     [session, setSession] = useState<OwnerSession | null>(null),
     [ready, setReady] = useState(false),
-    [screen, setScreen] = useState<"intake" | "login" | "dashboard">("intake"),
+    [screen, setScreen] = useState<"chat" | "intake" | "login" | "dashboard">(
+      "chat",
+    ),
     [error, setError] = useState("");
   const pending = useRef<{ payload: string; key: string } | null>(null);
+  const [draft, setDraft] = useState<Partial<Intake> | undefined>();
   useEffect(() => {
     const slug = new URLSearchParams(location.search).get("shop") || "";
     Promise.all([
@@ -81,13 +85,13 @@ export default function BackendApp() {
           autoflow<span>AI</span>
         </a>
         <span className="demo-pill">
-          <ShieldCheck size={14} /> Private workspace · v0.2
+          <ShieldCheck size={14} /> Private workspace · v0.3
         </span>
         <div>
-          {screen !== "intake" && (
-            <button className="text-button" onClick={() => setScreen("intake")}>
+          {screen !== "chat" && (
+            <button className="text-button" onClick={() => setScreen("chat")}>
               <ArrowLeft size={14} />
-              Customer intake
+              Receptionist
             </button>
           )}
           {session ? (
@@ -128,9 +132,19 @@ export default function BackendApp() {
           <button className="secondary" onClick={() => location.reload()}>
             Reload workspace
           </button>
+        ) : screen === "chat" ? (
+          <AiReceptionist
+            key={shop.slug}
+            shop={shop.slug}
+            onForm={(value) => {
+              setDraft(value);
+              setScreen("intake");
+            }}
+          />
         ) : screen === "intake" ? (
           <Receptionist
             key={shop.slug}
+            initialDraft={draft}
             backend={{
               shopName: shop.name,
               retentionDays: shop.retentionDays,
@@ -398,6 +412,7 @@ function OwnerDashboard({
           Refresh leads
         </button>
       </div>
+      <KnowledgeSettings session={session} expired={expired} />
       {error && (
         <p className="error-banner" role="alert">
           {error}
